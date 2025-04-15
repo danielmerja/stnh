@@ -320,6 +320,23 @@ export async function submitTweet({
 }) {
   const supabase = await createClient()
 
+  // TODO: Future improvements needed:
+  // 1. Implement proper moderation flow:
+  //    - Create admin interface
+  //    - Use submissions table for pending posts
+  //    - Add approval/rejection process
+  // 2. Add user authentication:
+  //    - Replace "anonymous" with actual user ID
+  //    - Add user roles (admin, moderator, user)
+  // 3. Enhance post metadata:
+  //    - Add title field
+  //    - Add proper validation for all fields
+  //    - Add rate limiting for submissions
+  // 4. Add security measures:
+  //    - Validate tweet exists via Twitter API
+  //    - Add spam prevention
+  //    - Add content moderation
+
   // Validate tweet ID
   if (!tweetId || !tweetId.match(/^\d+$/)) {
     return { success: false, error: "Invalid Tweet ID" }
@@ -332,16 +349,20 @@ export async function submitTweet({
     return { success: false, error: "This tweet has already been submitted" }
   }
 
-  // Insert as a submission first (for moderation)
-  const { error: submissionError } = await supabase.from("submissions").insert({
+  // TEMPORARY: Direct insertion into posts table
+  // TODO: Replace this with proper submission -> moderation -> publishing flow
+  const { error: postError } = await supabase.from("posts").insert({
     tweet_id: tweetId,
     category_id: categoryId,
-    submitted_by: "anonymous", // TODO: Get user ID
-    notes: notes,
+    submitted_by: "anonymous", // TODO: Replace with actual user ID once auth is implemented
+    status: "published",
+    description: notes,
+    upvotes: 0,
+    downvotes: 0
   })
 
-  if (submissionError) {
-    console.error("Error creating submission:", submissionError)
+  if (postError) {
+    console.error("Error creating post:", postError)
     return { success: false, error: "Failed to submit post" }
   }
 
