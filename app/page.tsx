@@ -36,9 +36,6 @@ export default async function Home({
               <Link href="/" className="transition-colors hover:text-foreground/80">
                 Home
               </Link>
-              <Link href="/categories" className="transition-colors hover:text-foreground/80">
-                Categories
-              </Link>
               <Link href="/about" className="transition-colors hover:text-foreground/80">
                 About
               </Link>
