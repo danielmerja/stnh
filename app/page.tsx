@@ -3,10 +3,11 @@ import { ArrowUpRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { TwitterEmbed } from "@/components/twitter-embed"
+import { LinkedInEmbed } from "@/components/linkedin-embed"
 import { CategorySelect } from "@/components/category-select"
 import { SortTabs } from "@/components/sort-tabs"
 import { getCategories, getPosts } from "@/app/actions"
-import type { SortOption } from "@/lib/types"
+import type { Post, SortOption } from "@/lib/types"
 
 export default async function Home({
   searchParams,
@@ -83,7 +84,13 @@ export default async function Home({
 
             <div className="grid gap-6">
               {posts.length > 0 ? (
-                posts.map((post) => <TwitterEmbed key={post.id} post={post} />)
+                posts.map((post) => (
+                  post.post_type === "twitter" ? (
+                    <TwitterEmbed key={post.id} post={post} />
+                  ) : (
+                    <LinkedInEmbed key={post.id} post={post} />
+                  )
+                ))
               ) : (
                 <div className="text-center py-12">
                   <h3 className="text-lg font-medium">No posts found</h3>

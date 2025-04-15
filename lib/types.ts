@@ -1,5 +1,7 @@
 export type SortOption = "trending" | "recent" | "top"
 
+export type PostType = "twitter" | "linkedin"
+
 export interface Category {
   id: number
   name: string
@@ -10,7 +12,8 @@ export interface Category {
 
 export interface Post {
   id: number
-  tweet_id: string
+  post_type: PostType
+  post_id: string
   category_id: number
   title: string | null
   description: string | null
@@ -32,7 +35,8 @@ export interface Vote {
 
 export interface Submission {
   id: number
-  tweet_id: string
+  post_type: PostType
+  post_id: string
   category_id: number
   submitted_by: string | null
   status: string

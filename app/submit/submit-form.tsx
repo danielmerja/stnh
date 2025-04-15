@@ -11,16 +11,22 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import type { Category } from "@/lib/types"
-import { submitTweet } from "@/app/actions"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import type { Category, PostType } from "@/lib/types"
+import { submitPost } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
-  tweetUrl: z
+  postType: z.enum(["twitter", "linkedin"] as const),
+  postUrl: z
     .string()
     .url("Please enter a valid URL")
-    .refine((url) => url.includes("twitter.com") || url.includes("x.com"), {
-      message: "URL must be from Twitter/X",
+    .refine((url) => {
+      if (url.includes("twitter.com") || url.includes("x.com")) return true
+      if (url.includes("linkedin.com/feed/update/")) return true
+      return false
+    }, {
+      message: "URL must be from Twitter/X or LinkedIn",
     }),
   title: z.string().min(1, "Please enter a title"),
   description: z.string().min(1, "Please enter a description"),
@@ -39,7 +45,8 @@ export function SubmitForm({ categories }: SubmitFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tweetUrl: "",
+      postType: "twitter",
+      postUrl: "",
       title: "",
       description: "",
       categoryId: categories[0]?.id.toString() || "1",
@@ -50,22 +57,30 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     setIsSubmitting(true)
 
     try {
-      // Extract tweet ID from URL
-      const url = new URL(values.tweetUrl)
-      const pathParts = url.pathname.split("/")
-      const tweetId = pathParts[pathParts.length - 1]
+      let postId: string | null = null
 
-      if (!tweetId) {
+      // Extract post ID based on type
+      if (values.postType === "twitter") {
+        const url = new URL(values.postUrl)
+        const pathParts = url.pathname.split("/")
+        postId = pathParts[pathParts.length - 1]
+      } else if (values.postType === "linkedin") {
+        const match = values.postUrl.match(/urn:li:share:(\d+)/)
+        postId = match ? match[1] : null
+      }
+
+      if (!postId) {
         toast({
-          title: "Invalid tweet URL",
-          description: "Could not extract tweet ID from the URL",
+          title: "Invalid URL",
+          description: `Could not extract ${values.postType} post ID from the URL`,
           variant: "destructive",
         })
         return
       }
 
-      const result = await submitTweet({
-        tweetId,
+      const result = await submitPost({
+        postType: values.postType,
+        postId,
         title: values.title,
         description: values.description,
         categoryId: Number.parseInt(values.categoryId),
@@ -87,7 +102,7 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to submit the tweet",
+        description: "Failed to submit the post",
         variant: "destructive",
       })
     } finally {
@@ -95,19 +110,67 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     }
   }
 
+  const postType = form.watch("postType")
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="tweetUrl"
+          name="postType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Post Type</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="twitter" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Twitter/X Post
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="linkedin" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      LinkedIn Post
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="postUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tweet URL</FormLabel>
+              <FormLabel>Post URL</FormLabel>
               <FormControl>
-                <Input placeholder="https://twitter.com/username/status/123456789" {...field} />
+                <Input 
+                  placeholder={
+                    postType === "twitter" 
+                      ? "https://twitter.com/username/status/123456789" 
+                      : "https://www.linkedin.com/feed/update/urn:li:share:1234567890"
+                  } 
+                  {...field} 
+                />
               </FormControl>
-              <FormDescription>Paste the full URL of the tweet you want to submit</FormDescription>
+              <FormDescription>
+                {postType === "twitter" 
+                  ? "Paste the full URL of the tweet you want to submit"
+                  : "Paste the full URL of the LinkedIn post or the embed code (containing urn:li:share:...)"}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

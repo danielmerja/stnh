@@ -147,50 +147,15 @@ export async function voteOnPost({
 }
 
 // Submit a new post
-export async function submitPost(formData: FormData) {
-  const supabase = await createClient()
-
-  const tweetId = formData.get("tweetId") as string
-  const categoryId = Number.parseInt(formData.get("categoryId") as string)
-  const title = formData.get("title") as string
-  const description = formData.get("description") as string
-  const submittedBy = (formData.get("submittedBy") as string) || "anonymous"
-
-  // Validate tweet ID
-  if (!tweetId || !tweetId.match(/^\d+$/)) {
-    return { success: false, error: "Invalid Tweet ID" }
-  }
-
-  // Check if tweet already exists
-  const { data: existingPost } = await supabase.from("posts").select("id").eq("tweet_id", tweetId).single()
-
-  if (existingPost) {
-    return { success: false, error: "This tweet has already been submitted" }
-  }
-
-  // Insert as a submission first (for moderation)
-  const { error: submissionError } = await supabase.from("submissions").insert({
-    tweet_id: tweetId,
-    category_id: categoryId,
-    submitted_by: submittedBy,
-    notes: `Title: ${title}\nDescription: ${description}`,
-  })
-
-  if (submissionError) {
-    console.error("Error creating submission:", submissionError)
-    return { success: false, error: "Failed to submit post" }
-  }
-
-  return { success: true }
-}
-
-export async function submitTweet({
-  tweetId,
+export async function submitPost({
+  postType,
+  postId,
   title,
   description,
   categoryId,
 }: {
-  tweetId: string
+  postType: "twitter" | "linkedin"
+  postId: string
   title: string
   description: string
   categoryId: number
@@ -209,26 +174,32 @@ export async function submitTweet({
   //    - Add proper validation for all fields
   //    - Add rate limiting for submissions
   // 4. Add security measures:
-  //    - Validate tweet exists via Twitter API
+  //    - Validate post exists via respective APIs
   //    - Add spam prevention
   //    - Add content moderation
 
-  // Validate tweet ID
-  if (!tweetId || !tweetId.match(/^\d+$/)) {
-    return { success: false, error: "Invalid Tweet ID" }
+  // Validate post ID format
+  if (!postId || (postType === "twitter" && !postId.match(/^\d+$/))) {
+    return { success: false, error: "Invalid post ID format" }
   }
 
-  // Check if tweet already exists
-  const { data: existingPost } = await supabase.from("posts").select("id").eq("tweet_id", tweetId).single()
+  // Check if post already exists
+  const { data: existingPost } = await supabase
+    .from("posts")
+    .select("id")
+    .eq("post_type", postType)
+    .eq("post_id", postId)
+    .single()
 
   if (existingPost) {
-    return { success: false, error: "This tweet has already been submitted" }
+    return { success: false, error: "This post has already been submitted" }
   }
 
   // TEMPORARY: Direct insertion into posts table
   // TODO: Replace this with proper submission -> moderation -> publishing flow
   const { error: postError } = await supabase.from("posts").insert({
-    tweet_id: tweetId,
+    post_type: postType,
+    post_id: postId,
     title,
     description,
     category_id: categoryId,

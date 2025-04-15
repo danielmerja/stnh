@@ -78,7 +78,7 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
           
           // Add a link to the tweet (required for widgets.load())
           const tweetLink = document.createElement("a")
-          tweetLink.href = `https://twitter.com/x/status/${post.tweet_id}`
+          tweetLink.href = `https://twitter.com/x/status/${post.post_id}`
           tweetBlockquote.appendChild(tweetLink)
           
           // Add to DOM
@@ -104,7 +104,7 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
         tweetRef.current.innerHTML = ""
       }
     }
-  }, [post.tweet_id])
+  }, [post.post_id])
 
   const handleReport = () => {
     toast({
@@ -210,7 +210,7 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open(`https://twitter.com/i/web/status/${post.tweet_id}`, "_blank")}
+                    onClick={() => window.open(`https://twitter.com/i/web/status/${post.post_id}`, "_blank")}
                   >
                     Try viewing on X/Twitter <ExternalLink className="ml-2 h-3 w-3" />
                   </Button>
@@ -247,7 +247,7 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.open(`https://twitter.com/i/web/status/${post.tweet_id}`, "_blank")}
+            onClick={() => window.open(`https://twitter.com/i/web/status/${post.post_id}`, "_blank")}
           >
             View on X
           </Button>
