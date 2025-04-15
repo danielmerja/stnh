@@ -101,94 +101,45 @@ export async function getPostById(id: number) {
 // Vote on a post
 export async function voteOnPost({
   postId,
-  userId,
   voteType,
 }: {
   postId: number
-  userId: string
   voteType: "upvote" | "downvote"
 }) {
   const supabase = await createClient()
 
   try {
-    // Start a transaction
-    const { data: existingVote, error: fetchError } = await supabase
-      .from("votes")
-      .select("*")
-      .eq("post_id", postId)
-      .eq("user_id", userId)
+    // Get current post
+    const { data: post, error: fetchError } = await supabase
+      .from("posts")
+      .select("upvotes, downvotes")
+      .eq("id", postId)
       .single()
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-      // PGRST116 is "no rows returned" which is fine
-      console.error("Error checking for existing vote:", fetchError)
-      return { success: false, error: "Failed to check existing vote" }
+    if (fetchError) {
+      console.error("Error fetching post:", fetchError)
+      return { success: false, error: "Failed to fetch post" }
     }
 
-    // If user already voted the same way, remove their vote
-    if (existingVote && existingVote.vote_type === voteType) {
-      const { error: deleteError } = await supabase.from("votes").delete().eq("id", existingVote.id)
+    // Calculate new vote counts
+    const newUpvotes = voteType === "upvote" ? (post.upvotes || 0) + 1 : post.upvotes
+    const newDownvotes = voteType === "downvote" ? (post.downvotes || 0) + 1 : post.downvotes
 
-      if (deleteError) {
-        console.error("Error removing vote:", deleteError)
-        return { success: false, error: "Failed to remove vote" }
-      }
-    }
-    // If user already voted the other way, change their vote
-    else if (existingVote) {
-      const { error: updateError } = await supabase
-        .from("votes")
-        .update({ vote_type: voteType })
-        .eq("id", existingVote.id)
-
-      if (updateError) {
-        console.error("Error updating vote:", updateError)
-        return { success: false, error: "Failed to update vote" }
-      }
-    }
-    // If no existing vote, create a new one
-    else {
-      const { error: insertError } = await supabase.from("votes").insert({
-        post_id: postId,
-        user_id: userId,
-        vote_type: voteType,
-      })
-
-      if (insertError) {
-        console.error("Error inserting vote:", insertError)
-        return { success: false, error: "Failed to record vote" }
-      }
-    }
-
-    // Count total upvotes and downvotes from votes table
-    const { data: voteCounts, error: countError } = await supabase
-      .from("votes")
-      .select("vote_type")
-      .eq("post_id", postId)
-
-    if (countError) {
-      console.error("Error counting votes:", countError)
-      return { success: false, error: "Failed to update vote counts" }
-    }
-
-    const upvotes = voteCounts.filter(v => v.vote_type === "upvote").length
-    const downvotes = voteCounts.filter(v => v.vote_type === "downvote").length
-
-    // Update post with accurate vote counts
+    // Update post with new vote counts
     const { error: updateError } = await supabase
       .from("posts")
       .update({
-        upvotes,
-        downvotes,
+        upvotes: newUpvotes,
+        downvotes: newDownvotes,
       })
       .eq("id", postId)
 
     if (updateError) {
       console.error("Error updating post vote counts:", updateError)
-      return { success: false, error: "Failed to update post vote counts" }
+      return { success: false, error: "Failed to update vote counts" }
     }
 
-    return { success: true, upvotes, downvotes }
+    return { success: true, upvotes: newUpvotes, downvotes: newDownvotes }
   } catch (error) {
     console.error("Error in vote transaction:", error)
     return { success: false, error: "Failed to process vote" }

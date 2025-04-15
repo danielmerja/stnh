@@ -19,15 +19,13 @@ import { useToast } from "@/hooks/use-toast"
 
 interface TwitterEmbedProps {
   post: Post
-  userId?: string
 }
 
-export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) {
+export function TwitterEmbed({ post }: TwitterEmbedProps) {
   const tweetRef = useRef<HTMLDivElement>(null)
   const [isVoting, setIsVoting] = useState(false)
   const [localUpvotes, setLocalUpvotes] = useState(post.upvotes)
   const [localDownvotes, setLocalDownvotes] = useState(post.downvotes)
-  const [userVote, setUserVote] = useState<"upvote" | "downvote" | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
@@ -116,6 +114,54 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
     })
   }
 
+  async function handleVote(voteType: "upvote" | "downvote") {
+    setIsVoting(true)
+    try {
+      // Optimistically update UI
+      if (voteType === "upvote") {
+        setLocalUpvotes((prev) => prev + 1)
+      } else {
+        setLocalDownvotes((prev) => prev + 1)
+      }
+
+      // Send to server
+      const result = await voteOnPost({
+        postId: post.id,
+        voteType,
+      })
+
+      if (!result.success) {
+        // Revert optimistic update if server call fails
+        setLocalUpvotes(post.upvotes)
+        setLocalDownvotes(post.downvotes)
+
+        toast({
+          title: "Error",
+          description: result.error || "Failed to record your vote",
+          variant: "destructive",
+        })
+      } else {
+        // Update local state with actual server values
+        if (typeof result.upvotes === 'number' && typeof result.downvotes === 'number') {
+          setLocalUpvotes(result.upvotes)
+          setLocalDownvotes(result.downvotes)
+        }
+      }
+    } catch (error) {
+      // Revert optimistic update if there's an error
+      setLocalUpvotes(post.upvotes)
+      setLocalDownvotes(post.downvotes)
+
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsVoting(false)
+    }
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -178,7 +224,7 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
-              variant={userVote === "upvote" ? "default" : "outline"}
+              variant="outline"
               size="sm"
               className="flex items-center gap-1"
               onClick={() => handleVote("upvote")}
@@ -188,7 +234,7 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
               <span>{localUpvotes}</span>
             </Button>
             <Button
-              variant={userVote === "downvote" ? "default" : "outline"}
+              variant="outline"
               size="sm"
               className="flex items-center gap-1"
               onClick={() => handleVote("downvote")}
@@ -209,82 +255,6 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
       </CardFooter>
     </Card>
   )
-
-  async function handleVote(voteType: "upvote" | "downvote") {
-    if (!userId) {
-      toast({
-        title: "Authentication required",
-        description: "You need to be logged in to vote",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsVoting(true)
-    try {
-      // Optimistically update UI
-      if (userVote === voteType) {
-        // User is clicking the same vote type again, so remove their vote
-        if (voteType === "upvote") {
-          setLocalUpvotes((prev) => Math.max(0, prev - 1))
-        } else {
-          setLocalDownvotes((prev) => Math.max(0, prev - 1))
-        }
-        setUserVote(null)
-      } else if (userVote === null) {
-        // New vote
-        if (voteType === "upvote") {
-          setLocalUpvotes((prev) => prev + 1)
-        } else {
-          setLocalDownvotes((prev) => prev + 1)
-        }
-        setUserVote(voteType)
-      } else {
-        // Changing vote type
-        if (voteType === "upvote") {
-          setLocalUpvotes((prev) => prev + 1)
-          setLocalDownvotes((prev) => Math.max(0, prev - 1))
-        } else {
-          setLocalDownvotes((prev) => prev + 1)
-          setLocalUpvotes((prev) => Math.max(0, prev - 1))
-        }
-        setUserVote(voteType)
-      }
-
-      // Send to server
-      const result = await voteOnPost({
-        postId: post.id,
-        userId,
-        voteType,
-      })
-
-      if (!result.success) {
-        // Revert optimistic update if server call fails
-        setLocalUpvotes(post.upvotes)
-        setLocalDownvotes(post.downvotes)
-        setUserVote(null)
-
-        toast({
-          title: "Error",
-          description: result.error || "Failed to record your vote",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      // Revert optimistic update if there's an error
-      setLocalUpvotes(post.upvotes)
-      setLocalDownvotes(post.downvotes)
-      setUserVote(null)
-
-      toast({
-        title: "Error",
-        description: "Something went wrong",
-        variant: "destructive",
-      })
-    } finally {
-      setIsVoting(false)
-    }
-  }
 }
 
 // Add TypeScript type for Twitter widget
