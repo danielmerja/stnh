@@ -108,6 +108,14 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
     }
   }, [post.tweet_id])
 
+  const handleReport = () => {
+    toast({
+      title: "Report submitted",
+      description: "Yeah... good luck with that 😉",
+      duration: 3000,
+    })
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between p-4">
@@ -119,16 +127,16 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleReport}>
               <Flag className="mr-2 h-4 w-4" />
               Report
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Not actually fake</DropdownMenuItem>
-            <DropdownMenuItem>Offensive content</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReport}>Not actually fake</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReport}>Offensive content</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Other issue</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleReport}>Other issue</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
