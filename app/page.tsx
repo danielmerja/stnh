@@ -3,8 +3,8 @@ import { ArrowUpRight, Filter, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TwitterEmbed } from "@/components/twitter-embed"
 import { getCategories, getPosts } from "./actions"
 import type { SortOption } from "@/lib/types"
@@ -90,22 +90,25 @@ export default async function Home({
                 </TabsList>
               </Tabs>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
-                    <Link href={`/?category=${category.slug}`} key={category.id}>
-                      <Badge
-                        variant={categorySlug === category.slug ? "default" : "secondary"}
-                        className="cursor-pointer"
-                      >
+                <Select value={categorySlug || ""} onValueChange={(value) => {
+                  if (value) {
+                    window.location.href = `/?category=${value}`
+                  } else {
+                    window.location.href = "/"
+                  }
+                }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.slug}>
                         {category.name}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
