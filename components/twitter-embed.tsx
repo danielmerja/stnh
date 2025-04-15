@@ -169,6 +169,9 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
           <Badge variant="outline" className="w-fit">
             {post.category?.name || "Uncategorized"}
           </Badge>
+          <Badge variant="secondary" className="w-fit">
+            Twitter/X
+          </Badge>
           <span className="text-xs text-muted-foreground">Added {new Date(post.created_at).toLocaleDateString()}</span>
         </div>
         <DropdownMenu>

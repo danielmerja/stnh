@@ -89,6 +89,9 @@ export function LinkedInEmbed({ post }: LinkedInEmbedProps) {
           <Badge variant="outline" className="w-fit">
             {post.category?.name || "Uncategorized"}
           </Badge>
+          <Badge variant="secondary" className="w-fit">
+            LinkedIn
+          </Badge>
           <span className="text-xs text-muted-foreground">Added {new Date(post.created_at).toLocaleDateString()}</span>
         </div>
         <DropdownMenu>
