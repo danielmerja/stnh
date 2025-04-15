@@ -1,6 +1,9 @@
 import Link from "next/link"
+import { getCategories } from "../actions"
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const categories = await getCategories()
+
   return (
     <div className="container py-10">
       <div className="mb-8">
@@ -22,25 +25,15 @@ export default function AboutPage() {
           </p>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">What We Collect</h2>
+          <p>
+            We curate and archive viral social media posts that seem too good to be true. Our collection includes:
+          </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>
-              <strong>Overheard Conversations</strong> - Those suspiciously perfect dialogues that somehow always prove
-              the poster's worldview
-            </li>
-            <li>
-              <strong>My Kid Said</strong> - Children who apparently have the vocabulary and philosophical insight of
-              tenured professors
-            </li>
-            <li>
-              <strong>Fake DMs</strong> - Those private messages from celebrities that conveniently can't be screenshot
-            </li>
-            <li>
-              <strong>Random Encounters</strong> - Chance meetings with famous people that always end with applause
-            </li>
-            <li>
-              <strong>Workplace Drama</strong> - Office confrontations where the poster always delivers the perfect
-              comeback
-            </li>
+            {categories.map((category) => (
+              <li key={category.id}>
+                <strong>{category.name}</strong> - {category.description || `A collection of ${category.name.toLowerCase()} that seem too good to be true`}
+              </li>
+            ))}
           </ul>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Community Guidelines</h2>
@@ -52,7 +45,7 @@ export default function AboutPage() {
 
           <p className="mt-6">
             Have a suggestion or want to report content? Contact us at{" "}
-            <span className="font-mono">admin@shitthatneverhappened.com</span>
+            <span className="font-mono">nah@stnh.com</span>
           </p>
         </div>
       </div>
