@@ -1,11 +1,10 @@
 import Link from "next/link"
-import { ArrowUpRight, Filter, Search } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TwitterEmbed } from "@/components/twitter-embed"
+import { CategorySelect } from "@/components/category-select"
 import { getCategories, getPosts } from "./actions"
 import type { SortOption } from "@/lib/types"
 
@@ -90,25 +89,7 @@ export default async function Home({
                 </TabsList>
               </Tabs>
               <div className="flex items-center gap-2">
-                <Select value={categorySlug || ""} onValueChange={(value) => {
-                  if (value) {
-                    window.location.href = `/?category=${value}`
-                  } else {
-                    window.location.href = "/"
-                  }
-                }}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.slug}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategorySelect categories={categories} currentCategory={categorySlug} />
               </div>
             </div>
 
