@@ -11,12 +11,12 @@ interface CategorySelectProps {
 export function CategorySelect({ categories, currentCategory }: CategorySelectProps) {
   return (
     <Select 
-      value={currentCategory || ""} 
+      value={currentCategory || "all"} 
       onValueChange={(value) => {
-        if (value) {
-          window.location.href = `/?category=${value}`
-        } else {
+        if (value === "all") {
           window.location.href = "/"
+        } else {
+          window.location.href = `/?category=${value}`
         }
       }}
     >
@@ -24,7 +24,7 @@ export function CategorySelect({ categories, currentCategory }: CategorySelectPr
         <SelectValue placeholder="All Categories" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="">All Categories</SelectItem>
+        <SelectItem value="all">All Categories</SelectItem>
         {categories.map((category) => (
           <SelectItem key={category.id} value={category.slug}>
             {category.name}
