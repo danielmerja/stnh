@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { TwitterEmbed } from "@/components/twitter-embed"
 import { CategorySelect } from "@/components/category-select"
 import { SortTabs } from "@/components/sort-tabs"
-import { getCategories, getPosts } from "./actions"
+import { getCategories, getPosts } from "@/app/actions"
 import type { SortOption } from "@/lib/types"
 
 export default async function Home({

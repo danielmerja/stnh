@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { Category } from "@/lib/types"
-import { submitTweet } from "../actions"
+import { submitTweet } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({

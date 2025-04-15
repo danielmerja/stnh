@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { getCategories } from "../actions"
-import { SubmitForm } from "./submit-form"
+import { getCategories } from "@/app/actions"
+import { SubmitForm } from "@/app/submit/submit-form"
 
 export default async function SubmitPage() {
   const categories = await getCategories()
