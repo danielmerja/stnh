@@ -1,9 +1,6 @@
 import Link from "next/link"
-import { getCategories } from "../actions"
 
 export default async function AboutPage() {
-  const categories = await getCategories()
-
   return (
     <div className="container py-10">
       <div className="mb-8">
@@ -23,18 +20,6 @@ export default async function AboutPage() {
             In an era where social media clout is currency, we've created a space to celebrate, archive, and gently mock
             the most outlandish stories that people share online for likes and retweets.
           </p>
-
-          <h2 className="text-2xl font-semibold mt-8 mb-4">What We Collect</h2>
-          <p>
-            We curate and archive viral social media posts that seem too good to be true. Our collection includes:
-          </p>
-          <ul className="list-disc pl-6 space-y-2">
-            {categories.map((category) => (
-              <li key={category.id}>
-                <strong>{category.name}</strong> - {category.description || `A collection of ${category.name.toLowerCase()} that seem too good to be true`}
-              </li>
-            ))}
-          </ul>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Community Guidelines</h2>
           <p>

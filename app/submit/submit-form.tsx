@@ -22,6 +22,8 @@ const formSchema = z.object({
     .refine((url) => url.includes("twitter.com") || url.includes("x.com"), {
       message: "URL must be from Twitter/X",
     }),
+  title: z.string().min(1, "Please enter a title"),
+  description: z.string().min(1, "Please enter a description"),
   categoryId: z.string().min(1, "Please select a category"),
   notes: z.string().optional(),
 })
@@ -39,6 +41,8 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       tweetUrl: "",
+      title: "",
+      description: "",
       categoryId: "",
       notes: "",
     },
@@ -64,6 +68,8 @@ export function SubmitForm({ categories }: SubmitFormProps) {
 
       const result = await submitTweet({
         tweetId,
+        title: values.title,
+        description: values.description,
         categoryId: Number.parseInt(values.categoryId),
         notes: values.notes || "",
       })
@@ -112,6 +118,39 @@ export function SubmitForm({ categories }: SubmitFormProps) {
 
         <FormField
           control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Give this story a catchy title" {...field} />
+              </FormControl>
+              <FormDescription>A brief, attention-grabbing title for this fabricated story</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Explain why this story is likely fabricated"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>Provide context about why this story seems fake</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="categoryId"
           render={({ field }) => (
             <FormItem>
@@ -141,14 +180,14 @@ export function SubmitForm({ categories }: SubmitFormProps) {
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes (Optional)</FormLabel>
+              <FormLabel>Additional Notes (Optional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Add any additional context or why you think this tweet is fabricated"
+                  placeholder="Add any other relevant information"
                   {...field}
                 />
               </FormControl>
-              <FormDescription>Provide any additional information that might be helpful</FormDescription>
+              <FormDescription>Any other details you'd like to share</FormDescription>
               <FormMessage />
             </FormItem>
           )}

@@ -237,10 +237,14 @@ export async function submitPost(formData: FormData) {
 
 export async function submitTweet({
   tweetId,
+  title,
+  description,
   categoryId,
   notes,
 }: {
   tweetId: string
+  title: string
+  description: string
   categoryId: number
   notes: string
 }) {
@@ -255,7 +259,6 @@ export async function submitTweet({
   //    - Replace "anonymous" with actual user ID
   //    - Add user roles (admin, moderator, user)
   // 3. Enhance post metadata:
-  //    - Add title field
   //    - Add proper validation for all fields
   //    - Add rate limiting for submissions
   // 4. Add security measures:
@@ -279,10 +282,11 @@ export async function submitTweet({
   // TODO: Replace this with proper submission -> moderation -> publishing flow
   const { error: postError } = await supabase.from("posts").insert({
     tweet_id: tweetId,
+    title,
+    description,
     category_id: categoryId,
     submitted_by: "anonymous", // TODO: Replace with actual user ID once auth is implemented
     status: "published",
-    description: notes,
     upvotes: 0,
     downvotes: 0
   })
