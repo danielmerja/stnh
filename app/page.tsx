@@ -2,9 +2,9 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TwitterEmbed } from "@/components/twitter-embed"
 import { CategorySelect } from "@/components/category-select"
+import { SortTabs } from "@/components/sort-tabs"
 import { getCategories, getPosts } from "./actions"
 import type { SortOption } from "@/lib/types"
 
@@ -75,19 +75,7 @@ export default async function Home({
         <section className="container py-8">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <Tabs defaultValue={sort} className="w-full sm:w-auto">
-                <TabsList>
-                  <TabsTrigger value="trending" asChild>
-                    <Link href="/?sort=trending">Trending</Link>
-                  </TabsTrigger>
-                  <TabsTrigger value="recent" asChild>
-                    <Link href="/?sort=recent">Recent</Link>
-                  </TabsTrigger>
-                  <TabsTrigger value="top" asChild>
-                    <Link href="/?sort=top">Top</Link>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <SortTabs currentSort={sort} />
               <div className="flex items-center gap-2">
                 <CategorySelect categories={categories} currentCategory={categorySlug} />
               </div>
