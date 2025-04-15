@@ -33,57 +33,74 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
   const { toast } = useToast()
 
   useEffect(() => {
-    // Load Twitter widget script if it's not already loaded
-    const loadTweet = async () => {
+    // Function to load the Twitter script
+    const loadTwitterScript = () => {
+      return new Promise<void>((resolve, reject) => {
+        // If script is already loaded
+        if (window.twttr) {
+          resolve()
+          return
+        }
+
+        // Create script element
+        const script = document.createElement("script")
+        script.src = "https://platform.twitter.com/widgets.js"
+        script.async = true
+        
+        script.onload = () => resolve()
+        script.onerror = (error) => reject(error)
+        
+        document.head.appendChild(script)
+      })
+    }
+
+    // Function to embed the tweet
+    const embedTweet = async () => {
       setIsLoading(true)
       setLoadError(false)
 
       try {
-        if (!window.twttr) {
-          const script = document.createElement("script")
-          script.src = "https://platform.twitter.com/widgets.js"
-          script.async = true
-          script.charset = "utf-8"
-          
-          // Create a promise to wait for script to load
-          await new Promise((resolve, reject) => {
-            script.onload = resolve
-            script.onerror = reject
-            document.body.appendChild(script)
-          })
+        // First ensure Twitter script is loaded
+        await loadTwitterScript()
+
+        // Wait for twttr to be fully initialized
+        if (!window.twttr?.widgets) {
+          throw new Error("Twitter widgets not initialized")
         }
 
-        // Clear previous content
+        // Clear any existing content
         if (tweetRef.current) {
           tweetRef.current.innerHTML = ""
+
+          // Create blockquote element
+          const tweetBlockquote = document.createElement("blockquote")
+          tweetBlockquote.className = "twitter-tweet"
+          tweetBlockquote.setAttribute("data-dnt", "true")
+          tweetBlockquote.setAttribute("data-theme", document.documentElement.classList.contains("dark") ? "dark" : "light")
           
-          // Create tweet using the official method
-          const tweet = await window.twttr.widgets.createTweet(
-            post.tweet_id,
-            tweetRef.current,
-            {
-              theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
-              align: "center",
-              conversation: "none", // Don't show parent tweets
-              dnt: true, // Do not track
-            }
-          )
+          // Add a link to the tweet (required for widgets.load())
+          const tweetLink = document.createElement("a")
+          tweetLink.href = `https://twitter.com/x/status/${post.tweet_id}`
+          tweetBlockquote.appendChild(tweetLink)
+          
+          // Add to DOM
+          tweetRef.current.appendChild(tweetBlockquote)
 
-          if (!tweet) {
-            throw new Error("Failed to load tweet")
-          }
-
-          setIsLoading(false)
+          // Load the tweet
+          await window.twttr.widgets.load(tweetRef.current)
         }
+
+        setIsLoading(false)
       } catch (error) {
-        console.error("Error loading tweet:", error)
+        console.error("Error embedding tweet:", error)
         setLoadError(true)
         setIsLoading(false)
       }
     }
 
-    loadTweet()
+    embedTweet()
 
+    // Cleanup
     return () => {
       if (tweetRef.current) {
         tweetRef.current.innerHTML = ""
@@ -126,7 +143,7 @@ export function TwitterEmbed({ post, userId = "anonymous" }: TwitterEmbedProps) 
 
           <div 
             ref={tweetRef} 
-            className={isLoading || loadError ? "hidden" : ""}
+            className={isLoading || loadError ? "hidden" : "w-full"}
           />
 
           {loadError && (
@@ -273,7 +290,7 @@ declare global {
           options?: {
             theme?: "light" | "dark"
             align?: "left" | "center" | "right"
-            conversation?: "all" | "none"
+            conversation?: "none"
             dnt?: boolean
           }
         ) => Promise<HTMLElement | undefined>
