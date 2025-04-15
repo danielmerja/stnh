@@ -30,7 +30,7 @@ export default async function Home({
         <div className="container flex h-16 items-center">
           <div className="mr-4 hidden md:flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
-              <span className="font-bold text-xl">Shit That Never Happened</span>
+              <span className="font-bold text-xl">STNH 💩</span>
             </Link>
             <nav className="flex items-center space-x-6 text-sm font-medium">
               <Link href="/" className="transition-colors hover:text-foreground/80">
@@ -69,7 +69,7 @@ export default async function Home({
         <section className="container py-10">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Shit That Never Happened</h1>
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">STNH 💩</h1>
               <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 A digital wall of shame for viral lies and fabricated stories
               </p>
@@ -140,7 +140,7 @@ export default async function Home({
       <footer className="border-t py-6 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            © 2025 Shit That Never Happened. All rights reserved.
+            © 2025 STNH. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/terms" className="text-sm text-muted-foreground underline underline-offset-4">
