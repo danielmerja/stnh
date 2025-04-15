@@ -51,6 +51,7 @@ export default async function Home({
             </nav>
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+            {/* TODO: Search functionality to be implemented
             <div className="w-full flex-1 md:w-auto md:flex-none">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -61,6 +62,7 @@ export default async function Home({
                 />
               </div>
             </div>
+            */}
             <Button size="sm" asChild>
               <Link href="/submit">
                 Submit Post <ArrowUpRight className="ml-2 h-4 w-4" />
