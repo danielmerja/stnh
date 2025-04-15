@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TwitterEmbed } from "@/components/twitter-embed"
-import { getCategories, getPosts, seedInitialPosts } from "./actions"
+import { getCategories, getPosts } from "./actions"
 import type { SortOption } from "@/lib/types"
 
 export default async function Home({
@@ -22,13 +22,7 @@ export default async function Home({
 
   // Fetch categories and posts
   const categories = await getCategories()
-  let posts = await getPosts({ categorySlug, sort })
-
-  // If no posts, seed some initial data (for development)
-  if (posts.length === 0) {
-    await seedInitialPosts()
-    posts = await getPosts({ categorySlug, sort })
-  }
+  const posts = await getPosts({ categorySlug, sort })
 
   return (
     <div className="flex min-h-screen flex-col">
