@@ -238,13 +238,11 @@ export async function submitTweet({
   title,
   description,
   categoryId,
-  notes,
 }: {
   tweetId: string
   title: string
   description: string
   categoryId: number
-  notes: string
 }) {
   const supabase = await createClient()
 

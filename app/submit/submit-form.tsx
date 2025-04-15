@@ -25,7 +25,6 @@ const formSchema = z.object({
   title: z.string().min(1, "Please enter a title"),
   description: z.string().min(1, "Please enter a description"),
   categoryId: z.string().min(1, "Please select a category"),
-  notes: z.string().optional(),
 })
 
 interface SubmitFormProps {
@@ -44,7 +43,6 @@ export function SubmitForm({ categories }: SubmitFormProps) {
       title: "",
       description: "",
       categoryId: "",
-      notes: "",
     },
   })
 
@@ -71,7 +69,6 @@ export function SubmitForm({ categories }: SubmitFormProps) {
         title: values.title,
         description: values.description,
         categoryId: Number.parseInt(values.categoryId),
-        notes: values.notes || "",
       })
 
       if (result.success) {
@@ -170,24 +167,6 @@ export function SubmitForm({ categories }: SubmitFormProps) {
                 </SelectContent>
               </Select>
               <FormDescription>Choose the category that best fits this fabricated story</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Additional Notes (Optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Add any other relevant information"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>Any other details you'd like to share</FormDescription>
               <FormMessage />
             </FormItem>
           )}
