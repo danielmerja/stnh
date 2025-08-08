@@ -8,6 +8,8 @@ import { CategorySelect } from "@/components/category-select"
 import { SortTabs } from "@/components/sort-tabs"
 import { getCategories, getPosts } from "@/app/actions"
 import type { Post, SortOption } from "@/lib/types"
+import { SearchBar } from "@/components/search-bar"
+import { PostList } from "@/components/post-list"
 
 export default async function Home({
   searchParams,
@@ -20,9 +22,12 @@ export default async function Home({
   // Get category from URL if present
   const categorySlug = searchParams.category as string | undefined
 
+  // Get search query from URL
+  const query = (searchParams.query as string) || ""
+
   // Fetch categories and posts
   const categories = await getCategories()
-  const posts = await getPosts({ categorySlug, sort })
+  const posts = await getPosts({ categorySlug, sort, query })
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -42,18 +47,9 @@ export default async function Home({
             </nav>
           </div>
           <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-            {/* TODO: Search functionality to be implemented
             <div className="w-full flex-1 md:w-auto md:flex-none">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search posts..."
-                  className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[300px]"
-                />
-              </div>
+              <SearchBar />
             </div>
-            */}
             <Button size="sm" asChild>
               <Link href="/submit">
                 Submit Post <ArrowUpRight className="ml-2 h-4 w-4" />
@@ -82,34 +78,12 @@ export default async function Home({
               </div>
             </div>
 
-            <div className="grid gap-6">
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  post.post_type === "twitter" ? (
-                    <TwitterEmbed key={post.id} post={post} />
-                  ) : (
-                    <LinkedInEmbed key={post.id} post={post} />
-                  )
-                ))
-              ) : (
-                <div className="text-center py-12">
-                  <h3 className="text-lg font-medium">No posts found</h3>
-                  <p className="text-muted-foreground mt-2">
-                    {categorySlug
-                      ? "No posts in this category yet. Try another category or submit one!"
-                      : "No posts yet. Be the first to submit one!"}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {posts.length > 0 && (
-              <div className="flex justify-center">
-                <Button variant="outline" size="lg">
-                  Load More
-                </Button>
-              </div>
-            )}
+            <PostList
+              initialPosts={posts}
+              categorySlug={categorySlug}
+              sort={sort}
+              query={query}
+            />
           </div>
         </section>
       </main>
