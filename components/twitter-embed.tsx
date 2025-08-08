@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Flag, ThumbsUp, ThumbsDown, ExternalLink } from "lucide-react"
+import { Flag, ThumbsUp, ThumbsDown, ExternalLink } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,99 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import type { Post } from "@/lib/types"
 import { voteOnPost } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
+import { Tweet } from "react-tweet"
 
 interface TwitterEmbedProps {
   post: Post
 }
 
 export function TwitterEmbed({ post }: TwitterEmbedProps) {
-  const tweetRef = useRef<HTMLDivElement>(null)
   const [isVoting, setIsVoting] = useState(false)
   const [localUpvotes, setLocalUpvotes] = useState(post.upvotes)
   const [localDownvotes, setLocalDownvotes] = useState(post.downvotes)
-  const [loadError, setLoadError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
-
-  useEffect(() => {
-    // Function to load the Twitter script
-    const loadTwitterScript = () => {
-      return new Promise<void>((resolve, reject) => {
-        // If script is already loaded
-        if (window.twttr) {
-          resolve()
-          return
-        }
-
-        // Create script element
-        const script = document.createElement("script")
-        script.src = "https://platform.twitter.com/widgets.js"
-        script.async = true
-        
-        script.onload = () => resolve()
-        script.onerror = (error) => reject(error)
-        
-        document.head.appendChild(script)
-      })
-    }
-
-    // Function to embed the tweet
-    const embedTweet = async () => {
-      setIsLoading(true)
-      setLoadError(false)
-
-      try {
-        // First ensure Twitter script is loaded
-        await loadTwitterScript()
-
-        // Wait for twttr to be fully initialized
-        if (!window.twttr?.widgets) {
-          throw new Error("Twitter widgets not initialized")
-        }
-
-        // Clear any existing content
-        if (tweetRef.current) {
-          tweetRef.current.innerHTML = ""
-
-          // Create blockquote element
-          const tweetBlockquote = document.createElement("blockquote")
-          tweetBlockquote.className = "twitter-tweet"
-          tweetBlockquote.setAttribute("data-dnt", "true")
-          tweetBlockquote.setAttribute("data-theme", document.documentElement.classList.contains("dark") ? "dark" : "light")
-          
-          // Add a link to the tweet (required for widgets.load())
-          const tweetLink = document.createElement("a")
-          tweetLink.href = `https://twitter.com/x/status/${post.post_id}`
-          tweetBlockquote.appendChild(tweetLink)
-          
-          // Add to DOM
-          tweetRef.current.appendChild(tweetBlockquote)
-
-          // Load the tweet
-          await window.twttr.widgets.load(tweetRef.current)
-        }
-
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Error embedding tweet:", error)
-        setLoadError(true)
-        setIsLoading(false)
-      }
-    }
-
-    embedTweet()
-
-    // Cleanup
-    return () => {
-      if (tweetRef.current) {
-        tweetRef.current.innerHTML = ""
-      }
-    }
-  }, [post.post_id])
 
   const handleReport = () => {
     toast({
@@ -117,21 +38,18 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
   async function handleVote(voteType: "upvote" | "downvote") {
     setIsVoting(true)
     try {
-      // Optimistically update UI
       if (voteType === "upvote") {
         setLocalUpvotes((prev) => prev + 1)
       } else {
         setLocalDownvotes((prev) => prev + 1)
       }
 
-      // Send to server
       const result = await voteOnPost({
         postId: post.id,
         voteType,
       })
 
       if (!result.success) {
-        // Revert optimistic update if server call fails
         setLocalUpvotes(post.upvotes)
         setLocalDownvotes(post.downvotes)
 
@@ -141,14 +59,12 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
           variant: "destructive",
         })
       } else {
-        // Update local state with actual server values
         if (typeof result.upvotes === 'number' && typeof result.downvotes === 'number') {
           setLocalUpvotes(result.upvotes)
           setLocalDownvotes(result.downvotes)
         }
       }
     } catch (error) {
-      // Revert optimistic update if there's an error
       setLocalUpvotes(post.upvotes)
       setLocalDownvotes(post.downvotes)
 
@@ -193,34 +109,8 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
         {post.title && <h3 className="font-semibold text-lg mb-2">{post.title}</h3>}
         {post.description && <p className="text-muted-foreground mb-4">{post.description}</p>}
 
-        <div className="min-h-[200px] flex items-center justify-center">
-          {isLoading && (
-            <div className="animate-pulse text-muted-foreground">Loading tweet...</div>
-          )}
-
-          <div 
-            ref={tweetRef} 
-            className={isLoading || loadError ? "hidden" : "w-full"}
-          />
-
-          {loadError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error loading tweet</AlertTitle>
-              <AlertDescription>
-                <div className="space-y-2">
-                  <p>This tweet may have been deleted or is unavailable.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`https://twitter.com/i/web/status/${post.post_id}`, "_blank")}
-                  >
-                    Try viewing on X/Twitter <ExternalLink className="ml-2 h-3 w-3" />
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+        <div className="flex items-center justify-center">
+          <Tweet id={post.post_id} />
         </div>
       </CardContent>
       <CardFooter className="border-t p-4">
@@ -258,25 +148,4 @@ export function TwitterEmbed({ post }: TwitterEmbedProps) {
       </CardFooter>
     </Card>
   )
-}
-
-// Add TypeScript type for Twitter widget
-declare global {
-  interface Window {
-    twttr: {
-      widgets: {
-        createTweet: (
-          tweetId: string,
-          element: HTMLElement,
-          options?: {
-            theme?: "light" | "dark"
-            align?: "left" | "center" | "right"
-            conversation?: "none"
-            dnt?: boolean
-          }
-        ) => Promise<HTMLElement | undefined>
-        load: (element?: HTMLElement) => void
-      }
-    }
-  }
 }

@@ -13,7 +13,7 @@ export default async function SubmitPage() {
         </Link>
         <h1 className="text-3xl font-bold mt-4 mb-2">Submit a Post</h1>
         <p className="text-muted-foreground">
-          Found a tweet that's clearly fabricated? Submit it to our wall of shame.
+          Found a tweet that&apos;s clearly fabricated? Submit it to our wall of shame.
         </p>
       </div>
 

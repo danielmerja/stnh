@@ -11,19 +11,19 @@ export default async function AboutPage() {
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-lg">
-            Welcome to "Shit That Never Happened" — a digital museum dedicated to preserving the internet's most
+            Welcome to &quot;Shit That Never Happened&quot; — a digital museum dedicated to preserving the internet&apos;s most
             creative works of fiction disguised as real-life events.
           </p>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Our Mission</h2>
           <p>
-            In an era where social media clout is currency, we've created a space to celebrate, archive, and gently mock
+            In an era where social media clout is currency, we&apos;ve created a space to celebrate, archive, and gently mock
             the most outlandish stories that people share online for likes and retweets.
           </p>
 
           <h2 className="text-2xl font-semibold mt-8 mb-4">Community Guidelines</h2>
           <p>
-            While we enjoy a good laugh, we're not here to bully individuals. Our focus is on the phenomenon of
+            While we enjoy a good laugh, we&apos;re not here to bully individuals. Our focus is on the phenomenon of
             fabricated stories, not attacking specific people. We moderate submissions to ensure they meet our standards
             for both humor and ethics.
           </p>

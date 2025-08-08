@@ -20,10 +20,14 @@ interface LinkedInEmbedProps {
   post: Post
 }
 
+import { Skeleton } from "@/components/ui/skeleton"
+
 export function LinkedInEmbed({ post }: LinkedInEmbedProps) {
   const [isVoting, setIsVoting] = useState(false)
   const [localUpvotes, setLocalUpvotes] = useState<number>(post.upvotes)
   const [localDownvotes, setLocalDownvotes] = useState<number>(post.downvotes)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const { toast } = useToast()
 
   const handleReport = () => {
@@ -113,7 +117,14 @@ export function LinkedInEmbed({ post }: LinkedInEmbedProps) {
         {post.title && <h3 className="font-semibold text-lg mb-2">{post.title}</h3>}
         {post.description && <p className="text-muted-foreground mb-4">{post.description}</p>}
 
-        <div className="min-h-[200px] flex items-center justify-center">
+        <div className="min-h-[399px] flex items-center justify-center">
+          {isLoading && (
+            <div className="w-full max-w-[504px] space-y-4">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          )}
           <iframe
             src={`https://www.linkedin.com/embed/feed/update/urn:li:share:${post.post_id}?collapsed=1`}
             height="399"
@@ -121,8 +132,25 @@ export function LinkedInEmbed({ post }: LinkedInEmbedProps) {
             frameBorder="0"
             allowFullScreen
             title="Embedded LinkedIn post"
-            className="w-full max-w-[504px] mx-auto"
+            className={`w-full max-w-[504px] mx-auto ${isLoading || loadError ? 'hidden' : ''}`}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setIsLoading(false)
+              setLoadError(true)
+            }}
           />
+          {loadError && (
+            <div className="text-center text-red-500">
+              <p>Could not load LinkedIn post.</p>
+              <p>It may have been deleted or the link is incorrect.</p>
+              <Button
+                variant="link"
+                onClick={() => window.open(`https://www.linkedin.com/feed/update/urn:li:share:${post.post_id}`, "_blank")}
+              >
+                View on LinkedIn <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
       <CardFooter className="border-t p-4">
