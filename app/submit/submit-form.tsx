@@ -17,17 +17,7 @@ import { submitPost } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
-  postType: z.enum(["twitter", "linkedin"] as const),
-  postUrl: z
-    .string()
-    .url("Please enter a valid URL")
-    .refine((url) => {
-      if (url.includes("twitter.com") || url.includes("x.com")) return true
-      if (url.includes("linkedin.com/feed/update/")) return true
-      return false
-    }, {
-      message: "URL must be from Twitter/X or LinkedIn",
-    }),
+  postUrl: z.string().url("Please enter a valid URL"),
   title: z.string().min(1, "Please enter a title"),
   description: z.string().min(1, "Please enter a description"),
   categoryId: z.string().min(1, "Please select a category"),
@@ -45,7 +35,6 @@ export function SubmitForm({ categories }: SubmitFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      postType: "twitter",
       postUrl: "",
       title: "",
       description: "",
@@ -57,30 +46,8 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     setIsSubmitting(true)
 
     try {
-      let postId: string | null = null
-
-      // Extract post ID based on type
-      if (values.postType === "twitter") {
-        const url = new URL(values.postUrl)
-        const pathParts = url.pathname.split("/")
-        postId = pathParts[pathParts.length - 1]
-      } else if (values.postType === "linkedin") {
-        const match = values.postUrl.match(/urn:li:share:(\d+)/)
-        postId = match ? match[1] : null
-      }
-
-      if (!postId) {
-        toast({
-          title: "Invalid URL",
-          description: `Could not extract ${values.postType} post ID from the URL`,
-          variant: "destructive",
-        })
-        return
-      }
-
       const result = await submitPost({
-        postType: values.postType,
-        postId,
+        postUrl: values.postUrl,
         title: values.title,
         description: values.description,
         categoryId: Number.parseInt(values.categoryId),
@@ -110,46 +77,9 @@ export function SubmitForm({ categories }: SubmitFormProps) {
     }
   }
 
-  const postType = form.watch("postType")
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="postType"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Post Type</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="twitter" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      Twitter/X Post
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="linkedin" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      LinkedIn Post
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <FormField
           control={form.control}
           name="postUrl"
@@ -158,18 +88,12 @@ export function SubmitForm({ categories }: SubmitFormProps) {
               <FormLabel>Post URL</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder={
-                    postType === "twitter" 
-                      ? "https://twitter.com/username/status/123456789" 
-                      : "https://www.linkedin.com/feed/update/urn:li:share:1234567890"
-                  } 
+                  placeholder="https://twitter.com/username/status/123456789"
                   {...field} 
                 />
               </FormControl>
               <FormDescription>
-                {postType === "twitter" 
-                  ? "Paste the full URL of the tweet you want to submit"
-                  : "Paste the full URL of the LinkedIn post or the embed code (containing urn:li:share:...)"}
+                Paste the full URL of the tweet or LinkedIn post you want to submit.
               </FormDescription>
               <FormMessage />
             </FormItem>

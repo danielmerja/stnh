@@ -156,19 +156,47 @@ export async function voteOnPost({
 
 // Submit a new post
 export async function submitPost({
-  postType,
-  postId,
+  postUrl,
   title,
   description,
   categoryId,
 }: {
-  postType: "twitter" | "linkedin"
-  postId: string
+  postUrl: string
   title: string
   description: string
   categoryId: number
 }) {
   const supabase = await createClient()
+
+  let postType: "twitter" | "linkedin" | null = null
+  let postId: string | null = null
+
+  try {
+    const url = new URL(postUrl)
+    if (url.hostname.includes("twitter.com") || url.hostname.includes("x.com")) {
+      postType = "twitter"
+      const pathParts = url.pathname.split("/")
+      postId = pathParts[pathParts.length - 1]
+    } else if (url.hostname.includes("linkedin.com")) {
+      postType = "linkedin"
+      const match = postUrl.match(/urn:li:share:(\d+)/)
+      if (match) {
+        postId = match[1]
+      } else {
+        // Attempt to find activity ID in URL for posts shared by users
+        const activityMatch = postUrl.match(/activity:(\d+)/)
+        if (activityMatch) {
+            postId = activityMatch[1]
+        }
+      }
+    }
+  } catch (error) {
+    return { success: false, error: "Invalid URL provided" }
+  }
+
+  if (!postType || !postId) {
+    return { success: false, error: "Could not identify the post from the URL. Please provide a valid Twitter or LinkedIn post URL." }
+  }
 
   // TODO: Future improvements needed:
   // 1. Implement proper moderation flow:
@@ -187,7 +215,7 @@ export async function submitPost({
   //    - Add content moderation
 
   // Validate post ID format
-  if (!postId || (postType === "twitter" && !postId.match(/^\d+$/))) {
+  if (!postId.match(/^\d+$/)) {
     return { success: false, error: "Invalid post ID format" }
   }
 
