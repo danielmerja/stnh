@@ -23,11 +23,13 @@ export async function getPosts({
   sort = "trending",
   limit = 10,
   offset = 0,
+  query: searchQuery,
 }: {
   categorySlug?: string
   sort?: SortOption
   limit?: number
   offset?: number
+  query?: string
 }) {
   const supabase = await createClient()
 
@@ -39,6 +41,12 @@ export async function getPosts({
       category:categories(id, name, slug)
     `)
     .eq("status", "published")
+
+  // Add search query filter if provided
+  if (searchQuery) {
+    const searchPattern = `%${searchQuery}%`
+    query = query.or(`title.ilike.${searchPattern},description.ilike.${searchPattern}`)
+  }
 
   // Add category filter if provided
   if (categorySlug) {
